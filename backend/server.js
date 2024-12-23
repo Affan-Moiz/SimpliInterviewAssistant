@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const { protect } = require('./middleware/authMiddleware');
 
+
 // Load environment variables
 dotenv.config();
 
@@ -23,11 +24,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const authRoutes = require('./routes/authRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
 const managerRoutes = require('./routes/managerRoutes');
+const userRoutes = require('./routes/userRoutes');
+const organizationRoutes = require('./routes/organizationRoutes');
+const competencyRoutes = require('./routes/competencyRoutes');
+const questionRoutes = require('./routes/questionRoutes');
+const responseRoutes = require('./routes/responseRoutes');
+const positionRoutes = require('./routes/positionRoutes');
+
+
 
 // Use Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', protect, interviewRoutes);
 app.use('/api/managers', protect, managerRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/organizations', organizationRoutes);
+app.use('/api/competencies', competencyRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/responses', responseRoutes);
+app.use('/api/positions', positionRoutes);
+
+
 
 // Default Route
 app.get('/', (req, res) => {

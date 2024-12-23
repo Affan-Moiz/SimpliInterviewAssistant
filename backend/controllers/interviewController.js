@@ -18,8 +18,8 @@ const updateInterview = async (req, res) => {
     const interview = await Interview.findById(id);
 
     if (!interview) {
-      res.status(404);
-      throw new Error('Interview not found');
+      res.status(404).json({ message: 'Interview not found' });
+      return;
     }
 
     interview.decision = decision;
