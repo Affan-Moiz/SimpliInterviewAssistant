@@ -11,7 +11,7 @@ const CompetencySelectionPage = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
-  const { positionId } = location.state || {};
+  const { positionId, candidateName } = location.state || {};
 
   useEffect(() => {
     if (!positionId) {
@@ -52,7 +52,19 @@ const CompetencySelectionPage = () => {
       return;
     }
 
-    navigate('/confirm-competencies', { state: { selectedCompetencies } });
+    console.log('Navigating to confirmation with:', {
+      selectedCompetencies,
+      candidateName,
+      positionId,
+    });
+
+    navigate('/confirm-competencies', {
+      state: {
+        selectedCompetencies,
+        candidateName,
+        positionId,
+      },
+    });
   };
 
   return (

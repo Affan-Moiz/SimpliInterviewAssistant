@@ -17,6 +17,15 @@ function App() {
           <Route path="/start-interview" element={<InitialInterviewPage />} />
           <Route path="/select-competencies" element={<CompetencySelectionPage />} />
           <Route path="/confirm-competencies" element={<ConfirmationPage />} />
+          <Route
+            path="/"
+            element={
+              <div>
+                <h1>Welcome to the Interview Assistance Platform</h1>
+                <p>Please navigate to /signup, /login, or /start-interview to get started.</p>
+              </div>
+            }
+          />
         </Routes>
       </div>
     </Router>

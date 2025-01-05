@@ -33,14 +33,8 @@ const LoginPage = () => {
         if (data.token) {
           console.log('Success:', data);
           alert('Login successful!');
-          localStorage.setItem('token', data.token);
-
-          // Check user role and redirect accordingly
-          if (data.role === 'interviewer') {
-            navigate('/start-interview'); // Redirect to Initial Interview Page
-          } else {
-            alert('This feature is only available for interviewers.');
-          }
+          localStorage.setItem('token', data.token); // Store token in localStorage
+          navigate('/start-interview'); // Redirect to start interview page
         } else {
           alert('Invalid email or password');
         }

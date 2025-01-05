@@ -5,12 +5,51 @@ import '../styles/ConfirmationPage.css';
 
 const ConfirmationPage = () => {
   const location = useLocation();
-  const { selectedCompetencies } = location.state || {};
+  const { selectedCompetencies, candidateName, positionId } = location.state || {};
   const navigate = useNavigate();
 
+  // Check if required data is missing
+  if (!candidateName || !positionId) {
+    alert('Required information is missing. Redirecting to start interview page.');
+    navigate('/start-interview');
+    return null;
+  }
+
   const handleConfirm = () => {
-    alert('Competencies confirmed. Proceeding to next step.');
-    // Proceed to the next step of the interview process
+    // Prepare the interview data to be sent to the backend
+    const interviewData = {
+      candidateName,
+      position: positionId,
+      competencies: selectedCompetencies.technical
+        .concat(selectedCompetencies.behavioral)
+        .map((c) => ({ competency: c._id })),
+    };
+
+    console.log('Interview Data:', interviewData); // Log the request body for debugging
+
+    fetch('http://localhost:5000/api/interviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token for authentication
+      },
+      body: JSON.stringify(interviewData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Interview created:', data);
+        alert('Interview instance created successfully!');
+        navigate('/next-step'); // Redirect to next step
+      })
+      .catch((error) => {
+        console.error('Error creating interview:', error);
+        alert('Failed to create interview instance.');
+      });
   };
 
   return (
