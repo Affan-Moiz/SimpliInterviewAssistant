@@ -1,0 +1,39 @@
+.competency-selection-page {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .competency-columns {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  .competency-column {
+    width: 48%;
+  }
+  
+  .competency-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f1f1f1;
+    transition: background-color 0.3s ease;
+  }
+  
+  .competency-item:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .competency-item.selected {
+    background-color: #4caf50;
+    color: white;
+  }
+  
