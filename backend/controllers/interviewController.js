@@ -33,4 +33,41 @@ const updateInterview = async (req, res) => {
   }
 };
 
-module.exports = { getInterviews, updateInterview };
+
+const createInterview = async (req, res) => {
+  const { candidateName, position, competencies } = req.body;
+
+  try {
+    // Check for missing required fields
+    if (!candidateName || !position || !competencies || competencies.length === 0) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Create a new interview instance
+    const interview = new Interview({
+      candidateName,
+      position,
+      interviewer: req.user._id, // Set the interviewer from the logged-in user
+      organization: req.user.organization, // Set the organization from the logged-in user's organization
+      competencies: competencies.map((c) => ({
+        competency: c.competency,
+        completed: false,
+        score: 0,
+      })),
+    });
+
+    await interview.save();
+
+    res.status(201).json({
+      message: 'Interview created successfully',
+      interview,
+    });
+  } catch (error) {
+    console.error('Error creating interview:', error); // Log detailed error
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+};
+
+
+module.exports = { getInterviews, updateInterview, createInterview };
+
