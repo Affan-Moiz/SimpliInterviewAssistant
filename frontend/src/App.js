@@ -5,6 +5,9 @@ import LoginPage from './pages/LoginPage';
 import InitialInterviewPage from './pages/InitialInterviewPage';
 import CompetencySelectionPage from './pages/CompetencySelectionPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import CompetencyTilesPage from './pages/CompetencyTilesPage';
+import QuestionsPage from './pages/QuestionsPage';
+import FinalReviewPage from './pages/FinalReviewPage';
 import './App.css';
 
 function App() {
@@ -17,15 +20,9 @@ function App() {
           <Route path="/start-interview" element={<InitialInterviewPage />} />
           <Route path="/select-competencies" element={<CompetencySelectionPage />} />
           <Route path="/confirm-competencies" element={<ConfirmationPage />} />
-          <Route
-            path="/"
-            element={
-              <div>
-                <h1>Welcome to the Interview Assistance Platform</h1>
-                <p>Please navigate to /signup, /login, or /start-interview to get started.</p>
-              </div>
-            }
-          />
+          <Route path="/competencies" element={<CompetencyTilesPage />} />
+          <Route path="/questions" element={<QuestionsPage />} />
+          <Route path="/final-review" element={<FinalReviewPage />} />
         </Routes>
       </div>
     </Router>

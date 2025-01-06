@@ -52,12 +52,6 @@ const CompetencySelectionPage = () => {
       return;
     }
 
-    console.log('Navigating to confirmation with:', {
-      selectedCompetencies,
-      candidateName,
-      positionId,
-    });
-
     navigate('/confirm-competencies', {
       state: {
         selectedCompetencies,

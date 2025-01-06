@@ -33,7 +33,6 @@ const updateInterview = async (req, res) => {
   }
 };
 
-
 const createInterview = async (req, res) => {
   const { candidateName, position, competencies } = req.body;
 
@@ -68,6 +67,41 @@ const createInterview = async (req, res) => {
   }
 };
 
+const addResponses = async (req, res) => {
+  const { id } = req.params; // Interview ID
+  const { responses } = req.body; // Array of responses from the frontend
 
-module.exports = { getInterviews, updateInterview, createInterview };
+  try {
+    const interview = await Interview.findById(id);
 
+    if (!interview) {
+      return res.status(404).json({ message: 'Interview not found' });
+    }
+
+    // Add the new responses to the interview
+    responses.forEach((response) => {
+      interview.responses.push({
+        competency: response.competency,
+        question: response.question,
+        topicsCovered: [response.selectedTopic],
+      });
+    });
+
+    // Mark the related competency as completed
+    const competencyId = responses[0].competency;
+    const competencyIndex = interview.competencies.findIndex(
+      (c) => c.competency.toString() === competencyId
+    );
+    if (competencyIndex !== -1) {
+      interview.competencies[competencyIndex].completed = true;
+    }
+
+    await interview.save();
+    res.status(200).json({ message: 'Responses added successfully' });
+  } catch (error) {
+    console.error('Error adding responses:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+module.exports = { getInterviews, updateInterview, createInterview, addResponses };
