@@ -18,18 +18,18 @@ const updateInterview = async (req, res) => {
     const interview = await Interview.findById(id);
 
     if (!interview) {
-      res.status(404).json({ message: 'Interview not found' });
-      return;
+      return res.status(404).json({ message: 'Interview not found' });
     }
 
+    // Update the final decision
     interview.decision = decision;
-    const scores = calculateScores(interview);
-    interview.totalScore = scores.totalScore;
+
     await interview.save();
 
-    res.json({ message: 'Interview updated', scores });
+    res.status(200).json({ message: 'Final decision updated successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error updating interview:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -87,14 +87,24 @@ const addResponses = async (req, res) => {
       });
     });
 
-    // Mark the related competency as completed
+    // Mark the related competency as completed and calculate its score
     const competencyId = responses[0].competency;
     const competencyIndex = interview.competencies.findIndex(
       (c) => c.competency.toString() === competencyId
     );
     if (competencyIndex !== -1) {
       interview.competencies[competencyIndex].completed = true;
+
+      // Calculate score for the competency (example logic)
+      const competencyResponses = responses.filter(
+        (response) => response.competency === competencyId
+      );
+      const score = competencyResponses.length * 10; // Example scoring logic
+      interview.competencies[competencyIndex].score = score;
     }
+
+    // Recalculate the total score for the interview
+    interview.totalScore = interview.competencies.reduce((acc, comp) => acc + comp.score, 0);
 
     await interview.save();
     res.status(200).json({ message: 'Responses added successfully' });
@@ -104,4 +114,26 @@ const addResponses = async (req, res) => {
   }
 };
 
-module.exports = { getInterviews, updateInterview, createInterview, addResponses };
+
+const getInterviewById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const interview = await Interview.findById(id)
+      .populate('position', 'title')
+      .populate('competencies.competency', 'title');
+
+    if (!interview) {
+      return res.status(404).json({ message: 'Interview not found' });
+    }
+
+    res.status(200).json(interview);
+  } catch (error) {
+    console.error('Error fetching interview:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+module.exports = { getInterviews, updateInterview, createInterview, addResponses, getInterviewById };

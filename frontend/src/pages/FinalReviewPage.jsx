@@ -45,7 +45,7 @@ const FinalReviewPage = () => {
       })
       .then(() => {
         alert('Final decision submitted successfully!');
-        navigate('/dashboard'); // Navigate back to the dashboard or a confirmation screen
+        navigate('/start-interview'); // Navigate back to the dashboard or a confirmation screen
       })
       .catch((error) => {
         console.error('Error submitting final decision:', error);
@@ -62,11 +62,12 @@ const FinalReviewPage = () => {
       <h1>Final Review</h1>
       <p><strong>Candidate Name:</strong> {interviewData.candidateName}</p>
       <p><strong>Position:</strong> {interviewData.position.title}</p>
+      <p><strong>Total Score:</strong> {interviewData.totalScore}</p>
       <h2>Competencies</h2>
       <ul>
         {interviewData.competencies.map((comp) => (
           <li key={comp.competency._id}>
-            {comp.competency.title} - {comp.completed ? 'Completed' : 'Incomplete'}
+            {comp.competency.title} - Score: {comp.score} - {comp.completed ? 'Completed' : 'Incomplete'}
           </li>
         ))}
       </ul>

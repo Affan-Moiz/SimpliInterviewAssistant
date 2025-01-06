@@ -30,22 +30,34 @@ const QuestionsPage = () => {
   }, [competencyId, interviewId, navigate]);
 
   const handleOptionSelect = (questionId, topic) => {
-    setResponses((prevResponses) => ({
-      ...prevResponses,
-      [questionId]: topic,
-    }));
+    setResponses((prevResponses) => {
+      const existingTopics = prevResponses[questionId] || [];
+      let updatedTopics;
+
+      if (existingTopics.includes(topic)) {
+        // Remove the topic if it's already selected (toggle off)
+        updatedTopics = existingTopics.filter((t) => t !== topic);
+      } else {
+        // Add the topic if it's not already selected
+        updatedTopics = [...existingTopics, topic];
+      }
+
+      return { ...prevResponses, [questionId]: updatedTopics };
+    });
   };
 
   useEffect(() => {
-    // Enable the submit button only if all questions have been answered
-    setIsSubmitEnabled(Object.keys(responses).length === questions.length);
+    // Enable the submit button only if all questions have at least one selected option
+    setIsSubmitEnabled(
+      questions.length > 0 && questions.every((q) => responses[q._id]?.length > 0)
+    );
   }, [responses, questions]);
 
   const handleSubmit = () => {
     const responseData = questions.map((q) => ({
       question: q._id,
       competency: competencyId,
-      selectedTopic: responses[q._id],
+      selectedTopics: responses[q._id], // Send selected topics as an array
     }));
 
     fetch(`http://localhost:5000/api/interviews/${interviewId}/responses`, {
@@ -104,10 +116,10 @@ const QuestionsPage = () => {
                   question.topics.map((topic, index) => (
                     <label key={index} className="option">
                       <input
-                        type="radio"
+                        type="checkbox"
                         name={`question-${question._id}`}
                         value={topic}
-                        checked={responses[question._id] === topic}
+                        checked={responses[question._id]?.includes(topic)}
                         onChange={() => handleOptionSelect(question._id, topic)}
                       />
                       {topic}
