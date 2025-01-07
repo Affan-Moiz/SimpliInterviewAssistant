@@ -9,6 +9,9 @@ const QuestionsPage = () => {
   const [questions, setQuestions] = useState([]);
   const [responses, setResponses] = useState({});
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [topics, setTopics] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,8 +28,14 @@ const QuestionsPage = () => {
       },
     })
       .then((response) => response.json())
-      .then((data) => setQuestions(data))
-      .catch((error) => console.error('Error fetching questions:', error));
+      .then((data) => {
+        setQuestions(data);
+        setIsLoading(false); // Stop loading once data is fetched
+      })
+      .catch((error) => {
+        console.error('Error fetching questions:', error);
+        setIsLoading(false); // Stop loading even if there's an error
+      });
   }, [competencyId, interviewId, navigate]);
 
   const handleOptionSelect = (questionId, topic) => {
@@ -54,6 +63,11 @@ const QuestionsPage = () => {
   }, [responses, questions]);
 
   const handleSubmit = () => {
+    if (questions.length === 0) {
+      alert('No questions available for this competency.');
+      return;
+    }
+
     const responseData = questions.map((q) => ({
       question: q._id,
       competency: competencyId,
@@ -101,11 +115,76 @@ const QuestionsPage = () => {
       });
   };
 
+  const handleNewQuestionSubmit = (e) => {
+    e.preventDefault();
+
+    if (!newQuestion || topics.length === 0) {
+      alert('Please provide a question and at least one topic.');
+      return;
+    }
+
+    const newQuestionData = {
+      text: newQuestion,
+      topics,
+      competency: competencyId,
+    };
+
+    fetch('http://localhost:5000/api/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(newQuestionData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        alert('New question submitted successfully!');
+        setQuestions((prevQuestions) => [...prevQuestions, data]); // Add the new question to the list
+        setNewQuestion(''); // Clear the form
+        setTopics([]); // Clear topics
+      })
+      .catch((error) => {
+        console.error('Error submitting new question:', error);
+        alert('Failed to submit new question.');
+      });
+  };
+
   return (
     <div className="questions-page">
       <h1>Questions for {competencyTitle}</h1>
-      {questions.length === 0 ? (
+      {isLoading ? (
         <p>Loading questions...</p>
+      ) : questions.length === 0 ? (
+        <div className="no-questions">
+          <p>No questions available for this competency. You can submit a new question below:</p>
+          <form onSubmit={handleNewQuestionSubmit}>
+            <div>
+              <label>Question:</label>
+              <input
+                type="text"
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label>Topics (comma-separated):</label>
+              <input
+                type="text"
+                value={topics.join(', ')}
+                onChange={(e) => setTopics(e.target.value.split(',').map((t) => t.trim()))}
+                required
+              />
+            </div>
+            <Button text="Submit Question" type="submit" />
+          </form>
+        </div>
       ) : (
         <ul>
           {questions.map((question) => (
@@ -133,7 +212,9 @@ const QuestionsPage = () => {
           ))}
         </ul>
       )}
-      <Button text="Submit" onClick={handleSubmit} disabled={!isSubmitEnabled} />
+      {questions.length > 0 && (
+        <Button text="Submit" onClick={handleSubmit} disabled={!isSubmitEnabled} />
+      )}
     </div>
   );
 };

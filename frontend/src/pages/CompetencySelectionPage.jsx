@@ -20,11 +20,38 @@ const CompetencySelectionPage = () => {
       return;
     }
 
-    // Fetch competencies related to the selected position
-    fetch(`http://localhost:5000/api/competencies?position=${positionId}`)
-      .then((response) => response.json())
-      .then((data) => setCompetencies(data))
-      .catch((error) => console.error('Error fetching competencies:', error));
+    const token = localStorage.getItem('token'); // Retrieve token from localStorage
+
+    if (!token) {
+      alert('User not authenticated. Redirecting to login page.');
+      navigate('/login');
+      return;
+    }
+
+    // Fetch competencies related to the selected position with Authorization header
+    fetch(`http://localhost:5000/api/competencies?position=${positionId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch competencies');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCompetencies(data); // Ensure data is an array before setting state
+        } else {
+          console.error('Unexpected response format:', data);
+          setCompetencies([]); // Fallback to empty array if response is invalid
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching competencies:', error);
+        setCompetencies([]); // Fallback to empty array on error
+      });
   }, [positionId, navigate]);
 
   const handleSelectCompetency = (competency) => {

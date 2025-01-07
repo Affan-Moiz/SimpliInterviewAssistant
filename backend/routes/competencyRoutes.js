@@ -7,12 +7,21 @@ const {
   updateCompetency,
   deleteCompetency,
 } = require('../controllers/competencyController');
+const { protect } = require('../middleware/authMiddleware');
 
-// CRUD operations for competencies
-router.get('/', getCompetencies);
-router.get('/:id', getCompetencyById);
-router.post('/', createCompetency);
-router.put('/:id', updateCompetency);
-router.delete('/:id', deleteCompetency);
+// Get all competencies (filtered by position)
+router.get('/', protect, getCompetencies);
+
+// Get a competency by ID
+router.get('/:id', protect, getCompetencyById);
+
+// Create a new competency
+router.post('/', protect, createCompetency);
+
+// Update a competency
+router.put('/:id', protect, updateCompetency);
+
+// Delete a competency
+router.delete('/:id', protect, deleteCompetency);
 
 module.exports = router;

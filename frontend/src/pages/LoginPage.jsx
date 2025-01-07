@@ -47,7 +47,8 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
-      <h1>Login</h1>
+      <h1>Welcome Back!</h1>
+      <p className="login-subtitle">Please log in to continue.</p>
       <form onSubmit={handleSubmit}>
         <InputField
           label="Email"

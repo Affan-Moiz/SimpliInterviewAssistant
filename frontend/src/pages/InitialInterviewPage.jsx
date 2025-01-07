@@ -15,8 +15,17 @@ const InitialInterviewPage = () => {
 
   useEffect(() => {
     // Fetch all available positions when the page loads
-    fetch('http://localhost:5000/api/positions')
-      .then((response) => response.json())
+    fetch('http://localhost:5000/api/positions', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch positions');
+        }
+        return response.json();
+      })
       .then((data) => setPositions(data))
       .catch((error) => console.error('Error fetching positions:', error));
   }, []);
@@ -31,8 +40,17 @@ const InitialInterviewPage = () => {
     setFormData({ ...formData, position: selectedPositionId });
 
     // Fetch details for the selected position
-    fetch(`http://localhost:5000/api/positions/${selectedPositionId}`)
-      .then((response) => response.json())
+    fetch(`http://localhost:5000/api/positions/${selectedPositionId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch position details');
+        }
+        return response.json();
+      })
       .then((data) => setPositionDetails(data))
       .catch((error) => console.error('Error fetching position details:', error));
   };
@@ -49,6 +67,12 @@ const InitialInterviewPage = () => {
 
     // Redirect to Competency Selection Page with candidate and position details
     navigate('/select-competencies', { state: { positionId: formData.position, candidateName: formData.candidateName } });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear token from localStorage
+    alert('Logged out successfully!');
+    navigate('/login'); // Redirect to login page
   };
 
   return (
@@ -86,6 +110,7 @@ const InitialInterviewPage = () => {
         )}
 
         <Button text="Start Interview" type="submit" />
+        <Button text="Logout" onClick={handleLogout} className="logout-button" />
       </form>
     </div>
   );

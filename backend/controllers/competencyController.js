@@ -1,12 +1,20 @@
 const Competency = require('../models/Competency');
 
-// Get all competencies
+// Get all competencies filtered by position
 const getCompetencies = async (req, res) => {
+  const { position } = req.query; // Get position ID from query parameters
+
   try {
-    const competencies = await Competency.find();
+    if (!position) {
+      return res.status(400).json({ message: 'Position ID is required' });
+    }
+
+    // Find competencies related to the given position
+    const competencies = await Competency.find({ position });
     res.json(competencies);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching competencies:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

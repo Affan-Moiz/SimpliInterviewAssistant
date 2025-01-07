@@ -10,11 +10,22 @@ import QuestionsPage from './pages/QuestionsPage';
 import FinalReviewPage from './pages/FinalReviewPage';
 import './App.css';
 
+function LandingPage() {
+  return (
+    <div className="landing-text">
+      <h1>Welcome to SimpliInterview</h1>
+      <p>SimpliInterview helps streamline your interview process by guiding interviewers through structured steps, selecting competencies, and recording results.</p>
+      <p>Please log in or sign up to get started.</p>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/start-interview" element={<InitialInterviewPage />} />
