@@ -8,15 +8,7 @@ const ConfirmationPage = () => {
   const { selectedCompetencies, candidateName, positionId } = location.state || {};
   const navigate = useNavigate();
 
-  // Check if required data is missing
-  if (!candidateName || !positionId) {
-    alert('Required information is missing. Redirecting to start interview page.');
-    navigate('/start-interview');
-    return null;
-  }
-
   const handleConfirm = () => {
-    // Prepare the interview data to be sent to the backend
     const interviewData = {
       candidateName,
       position: positionId,
@@ -25,13 +17,11 @@ const ConfirmationPage = () => {
         .map((c) => ({ competency: c._id })),
     };
 
-    console.log('Interview Data:', interviewData); // Log the request body for debugging
-
     fetch('http://localhost:5000/api/interviews', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token for authentication
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify(interviewData),
     })
@@ -42,9 +32,19 @@ const ConfirmationPage = () => {
         return response.json();
       })
       .then((data) => {
-        console.log('Interview created:', data);
         alert('Interview instance created successfully!');
-        navigate('/next-step'); // Redirect to next step
+
+        // Store critical data in localStorage
+        localStorage.setItem(
+          'interviewData',
+          JSON.stringify({
+            selectedCompetencies,
+            interviewId: data.interview._id,
+            completedCompetencies: [],
+          })
+        );
+
+        navigate('/competencies');
       })
       .catch((error) => {
         console.error('Error creating interview:', error);

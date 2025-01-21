@@ -8,6 +8,7 @@ const InitialInterviewPage = () => {
   const [formData, setFormData] = useState({
     candidateName: '',
     position: '',
+    competencyType: '', // Added for HR/Technical/Both
   });
   const [positions, setPositions] = useState([]);
   const [positionDetails, setPositionDetails] = useState(null);
@@ -15,8 +16,17 @@ const InitialInterviewPage = () => {
 
   useEffect(() => {
     // Fetch all available positions when the page loads
-    fetch('http://localhost:5000/api/positions')
-      .then((response) => response.json())
+    fetch('http://localhost:5000/api/positions', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch positions');
+        }
+        return response.json();
+      })
       .then((data) => setPositions(data))
       .catch((error) => console.error('Error fetching positions:', error));
   }, []);
@@ -31,8 +41,17 @@ const InitialInterviewPage = () => {
     setFormData({ ...formData, position: selectedPositionId });
 
     // Fetch details for the selected position
-    fetch(`http://localhost:5000/api/positions/${selectedPositionId}`)
-      .then((response) => response.json())
+    fetch(`http://localhost:5000/api/positions/${selectedPositionId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch position details');
+        }
+        return response.json();
+      })
       .then((data) => setPositionDetails(data))
       .catch((error) => console.error('Error fetching position details:', error));
   };
@@ -40,7 +59,7 @@ const InitialInterviewPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.candidateName || !formData.position) {
+    if (!formData.candidateName || !formData.position || !formData.competencyType) {
       alert('Please fill in all fields before proceeding.');
       return;
     }
@@ -48,7 +67,19 @@ const InitialInterviewPage = () => {
     console.log('Interview Start Data:', formData);
 
     // Redirect to Competency Selection Page with candidate and position details
-    navigate('/select-competencies', { state: { positionId: formData.position, candidateName: formData.candidateName } });
+    navigate('/select-competencies', {
+      state: {
+        positionId: formData.position,
+        candidateName: formData.candidateName,
+        competencyType: formData.competencyType,
+      },
+    });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear token from localStorage
+    alert('Logged out successfully!');
+    navigate('/login'); // Redirect to login page
   };
 
   return (
@@ -79,13 +110,56 @@ const InitialInterviewPage = () => {
         {positionDetails && (
           <div className="position-details">
             <h3>Position Details</h3>
-            <p><strong>Department:</strong> {positionDetails.department}</p>
-            <p><strong>Grade:</strong> {positionDetails.grade}</p>
-            <p><strong>Reporting To:</strong> {positionDetails.reportingTo}</p>
+            <p>
+              <strong>Department:</strong> {positionDetails.department}
+            </p>
+            <p>
+              <strong>Grade:</strong> {positionDetails.grade}
+            </p>
+            <p>
+              <strong>Reporting To:</strong> {positionDetails.reportingTo}
+            </p>
           </div>
         )}
 
+        <div className="competency-type-selection">
+          <label>Select Competency Type</label>
+          <div className="options">
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="competencyType"
+                value="HR"
+                checked={formData.competencyType === 'HR'}
+                onChange={handleChange}
+              />
+              HR
+            </label>
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="competencyType"
+                value="Technical"
+                checked={formData.competencyType === 'Technical'}
+                onChange={handleChange}
+              />
+              Technical
+            </label>
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="competencyType"
+                value="Both"
+                checked={formData.competencyType === 'Both'}
+                onChange={handleChange}
+              />
+              Both
+            </label>
+          </div>
+        </div>
+
         <Button text="Start Interview" type="submit" />
+        <Button text="Logout" onClick={handleLogout} className="logout-button" />
       </form>
     </div>
   );

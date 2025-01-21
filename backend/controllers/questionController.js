@@ -1,12 +1,18 @@
 const Question = require('../models/Question');
 
-// Get all questions
+// Get questions filtered by competency
 const getQuestions = async (req, res) => {
+  const { competency } = req.query; // Get competency ID from query parameters
+
   try {
-    const questions = await Question.find().populate('competency');
+    // If competency ID is provided, filter questions by competency
+    const filter = competency ? { competency } : {};
+
+    const questions = await Question.find(filter).populate('competency');
     res.json(questions);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching questions:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
