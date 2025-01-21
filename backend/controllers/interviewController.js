@@ -3,10 +3,38 @@ const calculateScores = require('../utils/calculateScores');
 
 const getInterviews = async (req, res) => {
   try {
-    const interviews = await Interview.find({ organization: req.user.organization });
-    res.json(interviews);
+    const organizationId = req.user.organization;
+
+    if (!organizationId) {
+      return res.status(400).json({ message: 'User organization not found' });
+    }
+
+    // Fetch all non-rejected interviews for the organization
+    const interviews = await Interview.find({
+      organization: organizationId,
+      decision: { $ne: 'Reject' },
+    })
+      .populate('position', 'title') // Populate position title
+      .sort({ 'position.title': 1 });
+
+    if (!interviews || interviews.length === 0) {
+      return res.status(404).json({ message: 'No interviews found' });
+    }
+
+    // Group interviews by position title, handle null positions gracefully
+    const groupedInterviews = interviews.reduce((acc, interview) => {
+      const positionTitle = interview.position?.title || 'Unknown Position'; // Fallback to 'Unknown Position'
+      if (!acc[positionTitle]) {
+        acc[positionTitle] = [];
+      }
+      acc[positionTitle].push(interview);
+      return acc;
+    }, {});
+
+    res.status(200).json(groupedInterviews);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching interviews:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -24,14 +52,23 @@ const updateInterview = async (req, res) => {
     // Update the final decision
     interview.decision = decision;
 
+    if (decision === 'Hire') {
+      // Reject all other interviews for the same position in the same organization
+      await Interview.updateMany(
+        { position: interview.position, organization: interview.organization, _id: { $ne: id } },
+        { decision: 'Reject' }
+      );
+    }
+
     await interview.save();
 
-    res.status(200).json({ message: 'Final decision updated successfully' });
+    res.status(200).json({ message: 'Final decision updated successfully', interview });
   } catch (error) {
     console.error('Error updating interview:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 const createInterview = async (req, res) => {
   const { candidateName, position, competencies } = req.body;

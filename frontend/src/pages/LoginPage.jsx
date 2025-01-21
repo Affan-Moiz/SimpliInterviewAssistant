@@ -8,6 +8,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    role: '', // Added for role selection
   });
   const navigate = useNavigate();
 
@@ -18,6 +19,12 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!formData.role) {
+      alert('Please select a role before logging in.');
+      return;
+    }
+
     console.log('Login Data:', formData);
 
     // Call the backend API to log in the user
@@ -26,15 +33,29 @@ const LoginPage = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.token) {
-          console.log('Success:', data);
+        console.log('API Response:', data); // Log response for debugging
+        if (data.token && data.role === formData.role) {
+          console.log('Login successful!');
           alert('Login successful!');
           localStorage.setItem('token', data.token); // Store token in localStorage
-          navigate('/start-interview'); // Redirect to start interview page
+
+          // Redirect based on the selected role
+          if (formData.role === 'interviewer') {
+            navigate('/start-interview');
+          } else if (formData.role === 'manager') {
+            navigate('/manager-dashboard');
+          } else {
+            alert(`Dashboard for ${formData.role} is not available yet.`);
+          }
+        } else if (data.role !== formData.role) {
+          alert(`Role mismatch: You selected "${formData.role}" but your account role is "${data.role}".`);
         } else {
           alert('Invalid email or password');
         }
@@ -66,6 +87,21 @@ const LoginPage = () => {
           onChange={handleChange}
           placeholder="Enter your password"
         />
+
+        <div className="input-field">
+          <label>Select Role</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="">Select your role</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="interviewer">Interviewer</option>
+          </select>
+        </div>
+
         <Button text="Login" type="submit" />
       </form>
     </div>
